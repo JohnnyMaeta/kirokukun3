@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>スーパー記録くん - メディア記録アプリ</title>
+  <style>
+    body { 
+      font-family: 'Segoe UI', Tahoma, sans-serif; 
+      margin: 0; 
+      padding: 20px; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container { 
+      background-color: #fff; 
+      padding: 25px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+      max-width: 700px; 
+      margin: auto;
+    }
+    h1 { 
+      text-align: center; 
+      margin-bottom: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* モード切替タブ */
+    .mode-tabs {
+      display: flex;
+      margin-bottom: 25px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .mode-tab.active {
+      color: #667eea;
+    }
+    .mode-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .mode-tab:hover:not(.active) {
+      color: #333;
+      background-color: #f5f5f5;
+    }
+    
+    /* モードコンテンツ */
+    .mode-content {
+      display: none;
+    }
+    .mode-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* メディア要素 */
+    .media-container { 
+      position: relative; 
+      background-color: #000; 
+      margin-bottom: 20px; 
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    video, audio { 
+      width: 100%; 
+      display: block; 
+    }
+    #audioVisualizer {
+      width: 100%;
+      height: 150px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    #drawingCanvas {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0; 
+      border-radius: 8px; 
+      box-sizing: border-box;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+      resize: vertical;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* コントロール */
+    .drawing-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .drawing-controls label {
+      font-weight: 600;
+    }
+    .drawing-controls input[type="color"] {
+      width: 40px;
+      height: 40px;
+      border: none;
+      padding: 0;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .drawing-controls input[type="range"] {
+      width: 120px;
+    }
+
+    /* 入力グループ */
+    .input-group { 
+      margin-bottom: 20px; 
+    }
+    .input-group label { 
+      display: block; 
+      margin-bottom: 8px; 
+      font-weight: 600; 
+      color: #333;
+    }
+    .input-group input[type="text"],
+    .input-group select { 
+      width: 100%; 
+      padding: 12px; 
+      border: 2px solid #e0e0e0; 
+      border-radius: 8px; 
+      box-sizing: border-box;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    .input-group input[type="text"]:focus,
+    .input-group select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    /* ボタン */
+    .button-group { 
+      text-align: center; 
+      margin-top: 25px;
+    }
+    button { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white; 
+      border: none; 
+      padding: 12px 30px;
+      font-size: 16px; 
+      font-weight: 600;
+      margin: 0 8px; 
+      cursor: pointer; 
+      border-radius: 25px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    button:hover:not(:disabled) { 
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:disabled { 
+      background: #cccccc; 
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    button.stop-btn {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    button.save-btn {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    
+    /* ステータス表示 */
+    #status { 
+      margin-top: 20px; 
+      padding: 15px; 
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      border-radius: 8px; 
+      text-align: center;
+      font-weight: 500;
+      min-height: 20px;
+      color: #333;
+    }
+    #status.recording {
+      background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.8; }
+    }
+    
+    /* 情報テキスト */
+    .info-text {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+      font-style: italic;
+    }
+    
+    /* アイコン */
+    .mode-icon {
+      font-size: 20px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🎙️ スーパー記録くん 🎥</h1>
+    
+    <!-- モード切替タブ -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="switchMode('audio')">
+        <span class="mode-icon">🎙️</span>音声録音
+      </button>
+      <button class="mode-tab" onclick="switchMode('video')">
+        <span class="mode-icon">🎥</span>動画録画
+      </button>
+      <button class="mode-tab" onclick="switchMode('photo')">
+        <span class="mode-icon">📷</span>写真撮影
+      </button>
+      <button class="mode-tab" onclick="switchMode('drawing')">
+        <span class="mode-icon">✏️</span>お絵かき
+      </button>
+      <button class="mode-tab" onclick="switchMode('text')">
+        <span class="mode-icon">📝</span>テキスト
+      </button>
+    </div>
+    
+    <!-- 音声録音モード -->
+    <div id="audioMode" class="mode-content active">
+      <div class="input-group">
+        <label for="audioPrefixName">名前/グループ名/ペア名:</label>
+        <input type="text" id="audioPrefixName" placeholder="例: TeamA, John_Jane">
+      </div>
+      <canvas id="audioVisualizer"></canvas>
+      <audio id="audioPlayback" controls style="width: 100%; margin-bottom: 15px; display: none;"></audio>
+      <div class="button-group">
+        <button id="audioRecordButton" onclick="startAudioRecording()">🎙️ 録音開始</button>
+        <button id="audioStopButton" class="stop-btn" onclick="stopAudioRecording()" disabled>⏹️ 停止</button>
+        <button id="audioSaveButton" class="save-btn" onclick="saveAudioRecording()" disabled>💾 MP3で保存</button>
+      </div>
+    </div>
+    
+    <!-- 動画録画モード -->
+    <div id="videoMode" class="mode-content">
+      <div class="input-group">
+        <label for="videoPrefixName">名前/グループ名/ペア名:</label>
+        <input type="text" id="videoPrefixName" placeholder="例: TeamA, John_Jane">
+      </div>
+      <div class="media-container">
+        <video id="previewVideo" autoplay muted playsinline style="display: block;"></video>
+        <video id="videoPlayback" controls style="display: none;"></video>
+      </div>
+      <div class="input-group" id="cameraSelectorContainer" style="display:none;">
+        <label for="cameraSelect">カメラ:</label>
+        <select id="cameraSelect"></select>
+      </div>
+      <div class="input-group">
+        <label for="qualitySelect">画質:</label>
+        <select id="qualitySelect">
+          <option value="low">低画質 (480p)</option>
+          <option value="medium" selected>中画質 (720p / 推奨)</option>
+          <option value="high">高画質 (1080p)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="formatSelect">ファイル形式:</label>
+        <select id="formatSelect">
+          <option value="mp4">MP4 (推奨)</option>
+          <option value="webm">WebM</option>
+        </select>
+        <div class="info-text" id="formatInfo"></div>
+      </div>
+      <div class="button-group">
+        <button id="videoRecordButton" onclick="startVideoRecording()">🎥 録画開始</button>
+        <button id="videoStopButton" class="stop-btn" onclick="stopVideoRecording()" disabled>⏹️ 停止</button>
+        <button id="videoSaveButton" class="save-btn" onclick="saveVideoRecording()" disabled>💾 保存</button>
+      </div>
+    </div>
+    
+    <!-- 写真撮影モード -->
+    <div id="photoMode" class="mode-content">
+      <div class="input-group">
+        <label for="photoPrefixName">名前/グループ名/ペア名:</label>
+        <input type="text" id="photoPrefixName" placeholder="例: TeamA, John_Jane">
+      </div>
+      <div class="media-container">
+        <video id="photoPreview" autoplay muted playsinline style="display: block;"></video>
+        <canvas id="photoCanvas" style="display: none;"></canvas>
+        <img id="capturedPhoto" style="display: none; width: 100%; border-radius: 8px;" />
+      </div>
+      <div class="input-group" id="photoCameraSelectorContainer" style="display:none;">
+        <label for="photoCameraSelect">カメラ:</label>
+        <select id="photoCameraSelect"></select>
+      </div>
+      <div class="input-group">
+        <label for="photoQualitySelect">画質:</label>
+        <select id="photoQualitySelect">
+          <option value="low">低画質 (640×480)</option>
+          <option value="medium" selected>中画質 (1280×720 / 推奨)</option>
+          <option value="high">高画質 (1920×1080)</option>
+          <option value="ultra">超高画質 (3840×2160)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label for="photoFormatSelect">ファイル形式:</label>
+        <select id="photoFormatSelect">
+          <option value="jpg">JPG (推奨・ファイルサイズ小)</option>
+          <option value="png">PNG (高品質・ファイルサイズ大)</option>
+        </select>
+        <div class="info-text">JPG: 一般的な写真に最適 / PNG: 透明度やテキストが含まれる画像に最適</div>
+      </div>
+      <div class="button-group">
+        <button id="photoCaptureButton" onclick="capturePhoto()">📷 撮影</button>
+        <button id="photoRetakeButton" onclick="retakePhoto()" style="display: none;">🔄 撮り直し</button>
+        <button id="photoSaveButton" class="save-btn" onclick="savePhoto()" disabled>💾 保存</button>
+      </div>
+    </div>
+
+    <!-- お絵かきモード -->
+    <div id="drawingMode" class="mode-content">
+      <div class="input-group">
+        <label for="drawingPrefixName">名前/グループ名/ペア名:</label>
+        <input type="text" id="drawingPrefixName" placeholder="例: TeamA, John_Jane">
+      </div>
+      <div class="drawing-controls">
+        <label for="penColor">色:</label>
+        <input type="color" id="penColor" value="#000000">
+        <label for="penWidth">太さ:</label>
+        <input type="range" id="penWidth" min="1" max="30" value="5">
+        <button id="clearCanvasButton" onclick="clearCanvas()">消去</button>
+      </div>
+      <canvas id="drawingCanvas"></canvas>
+      <div class="button-group">
+        <button id="drawingSaveButton" class="save-btn" onclick="saveDrawing()" disabled>💾 PNGで保存</button>
+      </div>
+    </div>
+
+    <!-- テキスト保存モード -->
+    <div id="textMode" class="mode-content">
+      <div class="input-group">
+        <label for="textPrefixName">名前/グループ名/ペア名:</label>
+        <input type="text" id="textPrefixName" placeholder="例: TeamA, John_Jane">
+      </div>
+      <div class="input-group">
+        <label for="textContent">保存するテキスト:</label>
+        <textarea id="textContent" rows="10" placeholder="ここにテキストを入力..."></textarea>
+      </div>
+      <div class="button-group">
+        <button id="textSaveButton" class="save-btn" onclick="saveText()" disabled>💾 TXTで保存</button>
+      </div>
+    </div>
+    
+    <div id="status">準備完了。モードを選択して記録を開始してください。</div>
+  </div>
+
+  <script>
+    // グローバル変数
+    let currentMode = 'audio';
+    let audioContext, analyser, audioStream, audioMediaRecorder, audioChunks = [], audioBlob;
+    let videoStream, videoMediaRecorder, videoChunks = [], videoBlob, actualVideoMimeType;
+    let photoStream, photoDataUrl;
+    let drawingCanvas, drawingCtx, isDrawing = false, lastX, lastY;
+
+    // 画質プリセット
+    const QUALITY_PRESETS = {
+      low: { width: { ideal: 640 }, height: { ideal: 480 }, videoBitsPerSecond: 500000 },
+      medium: { width: { ideal: 1280 }, height: { ideal: 720 }, videoBitsPerSecond: 2000000 },
+      high: { width: { ideal: 1920 }, height: { ideal: 1080 }, videoBitsPerSecond: 4500000 }
+    };
+    
+    // 写真用画質プリセット
+    const PHOTO_QUALITY_PRESETS = {
+      low: { width: 640, height: 480 },
+      medium: { width: 1280, height: 720 },
+      high: { width: 1920, height: 1080 },
+      ultra: { width: 3840, height: 2160 }
+    };
+    
+    // モード切替
+    function switchMode(mode) {
+      currentMode = mode;
+      
+      // 既存のストリームを停止
+      if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+      if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+      if (photoStream) photoStream.getTracks().forEach(track => track.stop());
+      audioStream = videoStream = photoStream = null;
+      
+      // UI更新
+      document.querySelectorAll('.mode-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.mode-content').forEach(content => content.classList.remove('active'));
+      
+      const tabMap = { audio: 0, video: 1, photo: 2, drawing: 3, text: 4 };
+      document.querySelectorAll('.mode-tab')[tabMap[mode]].classList.add('active');
+      document.getElementById(`${mode}Mode`).classList.add('active');
+
+      // モードごとの初期化
+      if (mode === 'audio') {
+        setupAudioVisualizer();
+        document.getElementById('status').textContent = 'マイクへのアクセスを許可してください。';
+      } else if (mode === 'video') {
+        setupCameraSelector();
+        updateFormatSelector();
+        document.getElementById('status').textContent = 'カメラとマイクへのアクセスを許可してください。';
+      } else if (mode === 'photo') {
+        setupPhotoCameraSelector();
+        initPhotoPreview();
+        document.getElementById('status').textContent = 'カメラへのアクセスを許可してください。';
+      } else if (mode === 'drawing') {
+        initDrawingCanvas();
+        document.getElementById('status').textContent = 'お絵かきを開始できます。';
+      } else if (mode === 'text') {
+        initTextMode();
+        document.getElementById('status').textContent = 'テキストを入力してください。';
+      }
+    }
+    
+    // ========== 音声モード ========== 
+    function setupAudioVisualizer() {
+      const canvas = document.getElementById('audioVisualizer');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 150;
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    async function startAudioRecording() {
+      try {
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioMediaRecorder = new MediaRecorder(audioStream, { mimeType: 'audio/webm;codecs=opus' });
+        audioChunks = [];
+        audioMediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        audioMediaRecorder.onstop = () => {
+          audioBlob = new Blob(audioChunks, { type: audioMediaRecorder.mimeType });
+          document.getElementById('audioPlayback').src = URL.createObjectURL(audioBlob);
+          document.getElementById('audioPlayback').style.display = 'block';
+          document.getElementById('audioRecordButton').disabled = false;
+          document.getElementById('audioStopButton').disabled = true;
+          document.getElementById('audioSaveButton').disabled = false;
+          document.getElementById('status').textContent = '録音停止。再生またはMP3で保存が可能です。';
+          document.getElementById('status').classList.remove('recording');
+        };
+        audioMediaRecorder.start();
+        document.getElementById('status').textContent = '録音中...';
+        document.getElementById('status').classList.add('recording');
+        document.getElementById('audioRecordButton').disabled = true;
+        document.getElementById('audioStopButton').disabled = false;
+        document.getElementById('audioSaveButton').disabled = true;
+        document.getElementById('audioPlayback').style.display = 'none';
+        setupAudioLevelVisualizer();
+      } catch (err) {
+        document.getElementById('status').textContent = 'エラー: マイクにアクセスできませんでした。';
+      }
+    }
+    function setupAudioLevelVisualizer() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      const source = audioContext.createMediaStreamSource(audioStream);
+      source.connect(analyser);
+      analyser.fftSize = 256;
+      const canvas = document.getElementById('audioVisualizer');
+      const ctx = canvas.getContext('2d');
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      function draw() {
+        if (!audioMediaRecorder || audioMediaRecorder.state === 'inactive') return;
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+        ctx.fillStyle = 'rgb(20, 20, 30)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const barWidth = (canvas.width / bufferLength) * 2.5;
+        let x = 0;
+        for(let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * canvas.height;
+          const gradient = ctx.createLinearGradient(0, canvas.height, 0, canvas.height - barHeight);
+          gradient.addColorStop(0, '#667eea');
+          gradient.addColorStop(1, '#764ba2');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          x += barWidth + 1;
+        }
+      }
+      draw();
+    }
+    function stopAudioRecording() {
+      if (audioMediaRecorder && audioMediaRecorder.state !== "inactive") {
+        audioMediaRecorder.stop();
+        if (audioStream) audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+      }
+    }
+    async function saveAudioRecording() {
+      if (!audioBlob) return;
+      document.getElementById('status').textContent = 'MP3にエンコード中...';
+      document.getElementById('audioSaveButton').disabled = true;
+      try {
+        const mp3Blob = await encodeToMp3(audioBlob);
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          let userPrefix = document.getElementById('audioPrefixName').value.trim() || "unknown";
+          const baseFileName = `${userPrefix.replace(/[\s\\/:\*\?"<>\|]/g, '_')}_audio-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+          document.getElementById('status').textContent = 'ドライブに保存中...';
+          google.script.run
+            .withSuccessHandler(res => {
+              document.getElementById('status').textContent = res.success ? res.message : `保存失敗: ${res.message}`;
+              document.getElementById('audioSaveButton').disabled = !res.success;
+            })
+            .withFailureHandler(err => {
+              document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+              document.getElementById('audioSaveButton').disabled = false;
+            })
+            .saveAudioFile(reader.result, baseFileName);
+        };
+        reader.readAsDataURL(mp3Blob);
+      } catch (error) {
+        document.getElementById('status').textContent = `エンコードエラー: ${error.message}`;
+        document.getElementById('audioSaveButton').disabled = false;
+      }
+    }
+    async function encodeToMp3(audioBlob) {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuffer = await audioContext.decodeAudioData(await audioBlob.arrayBuffer());
+      const mp3encoder = new lamejs.Mp3Encoder(audioBuffer.numberOfChannels, audioBuffer.sampleRate, 128);
+      const mp3Data = [];
+      const pcmData = [];
+      for (let i = 0; i < audioBuffer.numberOfChannels; i++) pcmData.push(audioBuffer.getChannelData(i));
+      const samplesLeft = new Int16Array(pcmData[0].length);
+      for (let i = 0; i < pcmData[0].length; i++) samplesLeft[i] = Math.max(-1, Math.min(1, pcmData[0][i])) * 32767;
+      let samplesRight = null;
+      if (audioBuffer.numberOfChannels > 1) {
+        samplesRight = new Int16Array(pcmData[1].length);
+        for (let i = 0; i < pcmData[1].length; i++) samplesRight[i] = Math.max(-1, Math.min(1, pcmData[1][i])) * 32767;
+      }
+      const blockSize = 1152;
+      for (let i = 0; i < samplesLeft.length; i += blockSize) {
+        const leftChunk = samplesLeft.subarray(i, i + blockSize);
+        const rightChunk = samplesRight ? samplesRight.subarray(i, i + blockSize) : null;
+        const dataBuffer = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+        if (dataBuffer.length > 0) mp3Data.push(dataBuffer);
+      }
+      const dataBuffer = mp3encoder.flush();
+      if (dataBuffer.length > 0) mp3Data.push(dataBuffer);
+      return new Blob(mp3Data, { type: 'audio/mpeg' });
+    }
+
+    // ========== 動画モード ========== 
+    async function setupCameraSelector() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const cameraSelect = document.getElementById('cameraSelect');
+        cameraSelect.innerHTML = '';
+        videoDevices.forEach((device, i) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `カメラ ${i + 1}`;
+          cameraSelect.appendChild(option);
+        });
+        document.getElementById('cameraSelectorContainer').style.display = videoDevices.length > 1 ? 'block' : 'none';
+      } catch (err) {
+        document.getElementById('status').textContent = 'カメラへのアクセスが拒否されました。';
+      }
+    }
+    function updateFormatSelector() {
+      const formatSelect = document.getElementById('formatSelect');
+      formatSelect.innerHTML = '';
+      if (MediaRecorder.isTypeSupported('video/mp4')) formatSelect.add(new Option('MP4 (推奨)', 'mp4'));
+      if (MediaRecorder.isTypeSupported('video/webm')) formatSelect.add(new Option('WebM', 'webm'));
+    }
+    async function startVideoRecording() {
+      try {
+        const quality = document.getElementById('qualitySelect').value;
+        const constraints = { video: { ...QUALITY_PRESETS[quality] }, audio: true };
+        if (document.getElementById('cameraSelect').value) {
+          constraints.video.deviceId = { exact: document.getElementById('cameraSelect').value };
+        }
+        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        document.getElementById('previewVideo').srcObject = videoStream;
+        document.getElementById('previewVideo').style.display = 'block';
+        document.getElementById('videoPlayback').style.display = 'none';
+        const format = document.getElementById('formatSelect').value || 'webm';
+        actualVideoMimeType = `video/${format}`;
+        videoMediaRecorder = new MediaRecorder(videoStream, { mimeType: actualVideoMimeType, videoBitsPerSecond: QUALITY_PRESETS[quality].videoBitsPerSecond });
+        videoChunks = [];
+        videoMediaRecorder.ondataavailable = e => e.data.size > 0 && videoChunks.push(e.data);
+        videoMediaRecorder.onstop = () => {
+          videoBlob = new Blob(videoChunks, { type: actualVideoMimeType });
+          document.getElementById('videoPlayback').src = URL.createObjectURL(videoBlob);
+          document.getElementById('previewVideo').style.display = 'none';
+          document.getElementById('videoPlayback').style.display = 'block';
+          document.getElementById('videoRecordButton').disabled = false;
+          document.getElementById('videoStopButton').disabled = true;
+          document.getElementById('videoSaveButton').disabled = false;
+          document.getElementById('status').textContent = `録画停止。再生または保存が可能です。`;
+          document.getElementById('status').classList.remove('recording');
+        };
+        videoMediaRecorder.start();
+        document.getElementById('status').textContent = `録画中...`;
+        document.getElementById('status').classList.add('recording');
+        document.getElementById('videoRecordButton').disabled = true;
+        document.getElementById('videoStopButton').disabled = false;
+        document.getElementById('videoSaveButton').disabled = true;
+      } catch (err) {
+        document.getElementById('status').textContent = 'エラー: カメラ/マイクにアクセスできませんでした。';
+      }
+    }
+    function stopVideoRecording() {
+      if (videoMediaRecorder && videoMediaRecorder.state !== "inactive") {
+        videoMediaRecorder.stop();
+        if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+        document.getElementById('previewVideo').srcObject = null;
+      }
+    }
+    function saveVideoRecording() {
+      if (!videoBlob) return;
+      document.getElementById('status').textContent = 'ドライブに保存中...';
+      document.getElementById('videoSaveButton').disabled = true;
+      const reader = new FileReader();
+      reader.readAsDataURL(videoBlob);
+      reader.onloadend = () => {
+        const userPrefix = document.getElementById('videoPrefixName').value.trim() || "unknown";
+        const extension = actualVideoMimeType.includes('mp4') ? 'mp4' : 'webm';
+        const baseFileName = `${userPrefix.replace(/[\s\\/:\*\?"<>\|]/g, '_')}_video-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+        google.script.run
+          .withSuccessHandler(res => {
+            document.getElementById('status').textContent = res.success ? res.message : `保存失敗: ${res.message}`;
+            document.getElementById('videoSaveButton').disabled = !res.success;
+          })
+          .withFailureHandler(err => {
+            document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+            document.getElementById('videoSaveButton').disabled = false;
+          })
+          .saveVideoFile(reader.result, baseFileName, extension, actualVideoMimeType);
+      };
+    }
+
+    // ========== 写真モード ========== 
+    async function setupPhotoCameraSelector() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const cameraSelect = document.getElementById('photoCameraSelect');
+        cameraSelect.innerHTML = '';
+        videoDevices.forEach((device, i) => {
+          const option = document.createElement('option');
+          option.value = device.deviceId;
+          option.text = device.label || `カメラ ${i + 1}`;
+          cameraSelect.appendChild(option);
+        });
+        document.getElementById('photoCameraSelectorContainer').style.display = videoDevices.length > 1 ? 'block' : 'none';
+      } catch (err) {
+        document.getElementById('status').textContent = 'カメラへのアクセスが拒否されました。';
+      }
+    }
+    async function initPhotoPreview() {
+      try {
+        const quality = document.getElementById('photoQualitySelect').value;
+        const constraints = { video: { ...PHOTO_QUALITY_PRESETS[quality] } };
+        if (document.getElementById('photoCameraSelect').value) {
+          constraints.video.deviceId = { exact: document.getElementById('photoCameraSelect').value };
+        }
+        if (photoStream) photoStream.getTracks().forEach(track => track.stop());
+        photoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        document.getElementById('photoPreview').srcObject = photoStream;
+        document.getElementById('photoPreview').style.display = 'block';
+        document.getElementById('capturedPhoto').style.display = 'none';
+        document.getElementById('status').textContent = '撮影準備完了。';
+      } catch (err) {
+        document.getElementById('status').textContent = 'カメラへのアクセスが拒否されました。';
+      }
+    }
+    function capturePhoto() {
+      if (!photoStream) return;
+      const photoPreview = document.getElementById('photoPreview');
+      const canvas = document.getElementById('photoCanvas');
+      const quality = document.getElementById('photoQualitySelect').value;
+      canvas.width = PHOTO_QUALITY_PRESETS[quality].width;
+      canvas.height = PHOTO_QUALITY_PRESETS[quality].height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(photoPreview, 0, 0, canvas.width, canvas.height);
+      const format = document.getElementById('photoFormatSelect').value;
+      photoDataUrl = canvas.toDataURL(`image/${format}`);
+      document.getElementById('capturedPhoto').src = photoDataUrl;
+      document.getElementById('capturedPhoto').style.display = 'block';
+      document.getElementById('photoPreview').style.display = 'none';
+      document.getElementById('photoCaptureButton').style.display = 'none';
+      document.getElementById('photoRetakeButton').style.display = 'inline-block';
+      document.getElementById('photoSaveButton').disabled = false;
+      document.getElementById('status').textContent = `写真撮影完了。保存または撮り直しが可能です。`;
+    }
+    function retakePhoto() {
+      document.getElementById('photoPreview').style.display = 'block';
+      document.getElementById('capturedPhoto').style.display = 'none';
+      document.getElementById('photoCaptureButton').style.display = 'inline-block';
+      document.getElementById('photoRetakeButton').style.display = 'none';
+      document.getElementById('photoSaveButton').disabled = true;
+      photoDataUrl = null;
+      document.getElementById('status').textContent = '撮影準備完了。';
+    }
+    function savePhoto() {
+      if (!photoDataUrl) return;
+      document.getElementById('status').textContent = 'ドライブに保存中...';
+      document.getElementById('photoSaveButton').disabled = true;
+      const userPrefix = document.getElementById('photoPrefixName').value.trim() || "unknown";
+      const extension = document.getElementById('photoFormatSelect').value;
+      const baseFileName = `${userPrefix.replace(/[\s\\/:\*\?"<>\|]/g, '_')}_photo-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('status').textContent = res.success ? res.message : `保存失敗: ${res.message}`;
+          document.getElementById('photoSaveButton').disabled = !res.success;
+          document.getElementById('photoRetakeButton').style.display = res.success ? 'none' : 'inline-block';
+        })
+        .withFailureHandler(err => {
+          document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+          document.getElementById('photoSaveButton').disabled = false;
+        })
+        .savePhotoFile(photoDataUrl, baseFileName, extension);
+    }
+
+    // ========== お絵かきモード ========== 
+    function initDrawingCanvas() {
+      drawingCanvas = document.getElementById('drawingCanvas');
+      drawingCtx = drawingCanvas.getContext('2d');
+      const container = drawingCanvas.parentElement;
+      drawingCanvas.width = container.offsetWidth;
+      drawingCanvas.height = container.offsetWidth * 0.75;
+      clearCanvas();
+      drawingCanvas.addEventListener('mousedown', startDrawing);
+      drawingCanvas.addEventListener('mousemove', draw);
+      drawingCanvas.addEventListener('mouseup', stopDrawing);
+      drawingCanvas.addEventListener('mouseleave', stopDrawing);
+      drawingCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+      drawingCanvas.addEventListener('touchmove', draw, { passive: false });
+      drawingCanvas.addEventListener('touchend', stopDrawing);
+    }
+    function getEventPosition(e) {
+      const rect = drawingCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+    function startDrawing(e) {
+      e.preventDefault();
+      isDrawing = true;
+      const pos = getEventPosition(e);
+      [lastX, lastY] = [pos.x, pos.y];
+    }
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const pos = getEventPosition(e);
+      drawingCtx.beginPath();
+      drawingCtx.moveTo(lastX, lastY);
+      drawingCtx.lineTo(pos.x, pos.y);
+      drawingCtx.strokeStyle = document.getElementById('penColor').value;
+      drawingCtx.lineWidth = document.getElementById('penWidth').value;
+      drawingCtx.lineCap = 'round';
+      drawingCtx.lineJoin = 'round';
+      drawingCtx.stroke();
+      [lastX, lastY] = [pos.x, pos.y];
+      document.getElementById('drawingSaveButton').disabled = false;
+    }
+    function stopDrawing() {
+      isDrawing = false;
+    }
+    function clearCanvas() {
+      drawingCtx.fillStyle = '#FFFFFF';
+      drawingCtx.fillRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      document.getElementById('drawingSaveButton').disabled = true;
+    }
+    function saveDrawing() {
+      document.getElementById('status').textContent = 'ドライブに保存中...';
+      document.getElementById('drawingSaveButton').disabled = true;
+      const userPrefix = document.getElementById('drawingPrefixName').value.trim() || "unknown";
+      const baseFileName = `${userPrefix.replace(/[\s\\/:\*\?"<>\|]/g, '_')}_drawing-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('status').textContent = res.success ? res.message : `保存失敗: ${res.message}`;
+          if(res.success) clearCanvas();
+          document.getElementById('drawingSaveButton').disabled = !res.success;
+        })
+        .withFailureHandler(err => {
+          document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+          document.getElementById('drawingSaveButton').disabled = false;
+        })
+        .saveDrawingFile(drawingCanvas.toDataURL('image/png'), baseFileName);
+    }
+
+    // ========== テキストモード ========== 
+    function initTextMode() {
+      const textarea = document.getElementById('textContent');
+      const saveButton = document.getElementById('textSaveButton');
+      textarea.addEventListener('input', () => {
+        saveButton.disabled = textarea.value.trim() === '';
+      });
+    }
+    function saveText() {
+      const textContent = document.getElementById('textContent').value;
+      if (textContent.trim() === '') return;
+      document.getElementById('status').textContent = 'ドライブに保存中...';
+      document.getElementById('textSaveButton').disabled = true;
+      const userPrefix = document.getElementById('textPrefixName').value.trim() || "unknown";
+      const baseFileName = `${userPrefix.replace(/[\s\\/:\*\?"<>\|]/g, '_')}_text-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('status').textContent = res.success ? res.message : `保存失敗: ${res.message}`;
+          if(res.success) document.getElementById('textContent').value = '';
+          document.getElementById('textSaveButton').disabled = true;
+        })
+        .withFailureHandler(err => {
+          document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+          document.getElementById('textSaveButton').disabled = false;
+        })
+        .saveTextFile(textContent, baseFileName);
+    }
+
+    // ========== 初期化 ========== 
+    window.addEventListener('load', () => {
+      document.getElementById('status').textContent = '設定を読み込んでいます...';
+      google.script.run
+        .withSuccessHandler(settings => {
+          if (settings.error) document.getElementById('status').textContent = `設定読み込みエラー: ${settings.error}`;
+          const tabs = {
+            audio: document.querySelectorAll('.mode-tab')[0],
+            video: document.querySelectorAll('.mode-tab')[1],
+            photo: document.querySelectorAll('.mode-tab')[2],
+            drawing: document.querySelectorAll('.mode-tab')[3],
+            text: document.querySelectorAll('.mode-tab')[4]
+          };
+          tabs.audio.style.display = settings.audio ? 'flex' : 'none';
+          tabs.video.style.display = settings.video ? 'flex' : 'none';
+          tabs.photo.style.display = settings.photo ? 'flex' : 'none';
+          tabs.drawing.style.display = settings.drawing ? 'flex' : 'none';
+          tabs.text.style.display = settings.text ? 'flex' : 'none';
+
+          let firstVisibleMode = ['audio', 'video', 'photo', 'drawing', 'text'].find(mode => settings[mode]);
+
+          if (firstVisibleMode) {
+            document.querySelector('.mode-tab.active').classList.remove('active');
+            document.querySelector('.mode-content.active').classList.remove('active');
+            switchMode(firstVisibleMode);
+          } else {
+            document.getElementById('status').textContent = '表示できるモードがありません。設定を確認してください。';
+          }
+        })
+        .withFailureHandler(err => {
+          document.getElementById('status').textContent = `サーバーエラー: ${err.message}`;
+          switchMode('audio');
+        })
+        .getModeSettings();
+    });
+  </script>
+</body>
+</html>

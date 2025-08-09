@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>スーパー記録くん - 導入・設定マニュアル</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.8;
+      color: #3a3a3a;
+      background-color: #f5f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      background: linear-gradient(135deg, #6b73ff 0%, #00c3ff 100%);
+      color: white;
+      padding: 50px 20px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 3.2em;
+      font-weight: 700;
+    }
+    .header p {
+      font-size: 1.3em;
+      opacity: 0.95;
+      max-width: 600px;
+      margin: 10px auto 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .section {
+        background-color: #fff;
+        border-radius: 12px;
+        padding: 30px 40px;
+        margin-bottom: 40px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+    h2 {
+      font-size: 2.2em;
+      border-bottom: 3px solid #6b73ff;
+      padding-bottom: 15px;
+      margin-top: 0;
+      color: #333;
+    }
+    h3 {
+      font-size: 1.6em;
+      border-left: 5px solid #6b73ff;
+      padding-left: 15px;
+      margin-top: 40px;
+      margin-bottom: 20px;
+    }
+    p, li {
+      font-size: 1.1em;
+    }
+    ol li {
+        margin-bottom: 15px;
+    }
+    a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .button-wrapper {
+        text-align: center;
+        margin: 30px 0;
+    }
+    .button {
+      display: inline-block;
+      padding: 18px 35px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #fff !important;
+      background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+      border-radius: 50px;
+      text-decoration: none !important;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    }
+    code {
+      background-color: #eef2f5;
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 0.95em;
+      border: 1px solid #dce4e9;
+    }
+    .warning {
+      background-color: #fff9e6;
+      border: 1px solid #ffecb3;
+      padding: 20px 25px;
+      border-radius: 8px;
+      margin: 25px 0;
+      font-size: 1.05em;
+    }
+    .warning strong {
+        color: #c77c00;
+    }
+    .info {
+      background-color: #e7f3fe;
+      border: 1px solid #b3d8ff;
+      padding: 20px 25px;
+      border-radius: 8px;
+      margin: 25px 0;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 30px;
+      color: #888;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>スーパー記録くん</h1>
+    <p>音声・動画・写真・お絵かき・テキストを簡単に記録・管理するためのツール</p>
+  </div>
+
+  <div class="container">
+    <div class="section">
+      <h2>はじめに</h2>
+      <p>「スーパー記録くん」は、子どもたちが授業での活動、実験の様子、観察記録などを、手元のタブレットやPCで簡単に記録するためのツールです。ボタン一つで音声や動画などを記録し、先生のGoogleドライブに自動で整理・保存します。</p>
+      <p>このページは、<strong>先生（管理者）向け</strong>の導入マニュアルです。子どもたちがアプリを使い始められるように、必要な設定をステップバイステップで説明します。</p>
+    </div>
+
+    <div class="section">
+      <h2>導入手順（先生向け）</h2>
+      <p>このツールを使うには、まず中心となる「Googleスプレッドシート」を先生のGoogleアカウントにコピーし、それを「Webアプリ」として公開する作業が必要です。この作業で取得したURLを子どもたちに配布することで、子どもたちがアプリを使えるようになります。</p>
+
+      <h3>ステップ1: Googleスプレッドシートをコピーする</h3>
+      <ol>
+        <li><strong>下のボタンをクリックして、スプレッドシートのコピーページを開きます。</strong>
+          <div class="button-wrapper">
+            <a href="[ここにスプレッドシートのコピーリンクを貼り付け]" class="button" target="_blank">ここをクリックしてスプレッドシートをコピー</a>
+          </div>
+          <div class="warning">
+            <strong>重要:</strong> このリンクは、このツールを配布する方が設定する必要があります。もし上のボタンが機能しない場合は、このツールの配布者に連絡してください。
+          </div>
+        </li>
+        <li><strong>「コピーを作成」という青いボタンが表示されたら、それをクリックします。</strong>
+          <p>これにより、先生のGoogleドライブに、このツール専用のスプレッドシートが作成され、自動でそのファイルが開きます。</p>
+        </li>
+      </ol>
+
+      <h3>ステップ2: Webアプリとして公開（デプロイ）し、URLを取得する</h3>
+      <p>次に、コピーしたスプレッドシートを、子どもたちがブラウザから使える「Webアプリ」として公開（デプロイ）します。</p>
+
+      <ol>
+        <li>コピーして開かれたスプレッドシートの画面上部にあるメニューから<strong><code>拡張機能</code></strong>を探し、クリックします。</li>
+        <li>出てきたメニューの中から<strong><code>Apps Script</code></strong>を選択してクリックします。</li>
+        <li>プログラムの編集画面（Apps Scriptエディタ）が新しいタブで開きます。画面右上に表示されている青い<strong><code>デプロイ</code></strong>ボタンをクリックし、出てきたメニューから<strong><code>新しいデプロイ</code></strong>を選択します。</li>
+        <li>「新しいデプロイ」という画面が表示されたら、左上にある歯車のアイコン⚙️をクリックし、出てきたメニューから<strong><code>ウェブアプリ</code></strong>を選択します。</li>
+        <li>
+          <strong>ウェブアプリの設定項目を以下のように設定します。</strong>
+          <ul>
+            <li><strong>説明:</strong> <code>スーパー記録くん</code>など、分かりやすい名前を入力します（そのままでもOK）。</li>
+            <li><strong>次のユーザーとして実行:</strong> 必ず<strong><code>自分</code></strong>（先生のアカウント）を選択してください。</li>
+            <li><strong>アクセスできるユーザー:</strong> <strong><code>Googleアカウントを持つ全員</code></strong>を選択することをおすすめします。（学校のGoogleアカウントなどで運用する場合）</li>
+          </ul>
+        </li>
+        <li>右下の<strong><code>デプロイ</code></strong>ボタンをクリックします。</li>
+        <li>
+          <strong>「権限を承認」という画面が表示されます。</strong>これは、先生のGoogleアカウントでプログラムを動かし、先生のドライブへファイルを保存するための許可を求めるものです。
+          <div class="warning">
+            <strong>⚠️「このアプリはGoogleで確認されていません」という警告について</strong><br>
+            これは、自作のプログラムを動かす際に表示される標準的なメッセージです。驚かずに、以下の手順で許可を与えてください。
+            <ol>
+              <li>まず<strong><code>アクセスを承認</code></strong>ボタンをクリックします。</li>
+              <li>あなたのGoogleアカウントを選択する画面になるので、ご自身のアカウントをクリックします。</li>
+              <li>警告画面が表示されたら、<strong><code>詳細</code></strong>という文字のリンクをクリックします。</li>
+              <li>画面の一番下に<strong><code>（安全ではないページ）に移動</code></strong>というリンクが表示されるので、これをクリックします。</li>
+              <li>最後に、右下に表示される<strong><code>許可</code></strong>ボタンをクリックします。</li>
+            </ol>
+          </div>
+        </li>
+        <li>「デプロイが完了しました」と表示されたら、成功です！表示されている<strong><code>ウェブアプリURL</code></strong>の右側にある<code>コピー</code>ボタンをクリックして、URLを控えておきましょう。</li>
+      </ol>
+      <div class="info">
+          <h3>🎉 これで準備完了です！</h3>
+          <p>コピーしたこのURLが、子どもたちが使う「スーパー記録くん」の専用アドレスになります。<br>このURLを<strong>QRコードに変換して教室に掲示したり、クラスの連絡ツールで共有したり</strong>して、子どもたちに配布してください。</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>設定方法（先生向け）</h2>
+      <p>アプリを子どもたちに配布する前に、スプレッドシートでいくつかの便利な設定ができます。</p>
+
+      <h3>サブフォルダの設定</h3>
+      <p>記録されたファイルは、先生のGoogleドライブ直下に<strong>「メディア保存フォルダ」</strong>が自動で作られ、その中に保存されます。さらにその中に、クラス名や活動名ごとのサブフォルダを作成して、ファイルをきれいに整理することができます。</p>
+      <ol>
+        <li>先生のアカウントで、先ほどコピーしたスプレッドシートを開きます。</li>
+        <li>画面の左下にある<strong><code>シート1</code></strong>という名前のタブをクリックします。</li>
+        <li>アルファベットの「B」列と数字の「1」行が交差するマス（<code>B1</code>セル）に、作成したいサブフォルダの名前を入力します。<br>
+        例えば、「1年1組」や「理科の実験」などと入力すると、その名前のフォルダが自動で作成され、以降の記録はその中に保存されます。<code>B1</code>セルを空欄にしておくと、「メディア保存フォルダ」直下に保存されます。</li>
+      </ol>
+
+      <h3>表示する機能の選択</h3>
+      <p>子どもたちに使わせたい機能だけをアプリに表示させることができます。</p>
+      <ol>
+        <li><strong><code>シート1</code></strong>のE列で、表示したい機能のセルに<code>1</code>を、非表示にしたい機能のセルに<code>0</code>を入力します。</li>
+        <li>設定するセルは以下の通りです。
+          <ul>
+            <li><code>E1</code>セル: 🎙️ 音声録音</li>
+            <li><code>E2</code>セル: 🎥 動画録画</li>
+            <li><code>E3</code>セル: 📷 写真撮影</li>
+            <li><code>E4</code>セル: ✏️ お絵かき</li>
+            <li><code>E5</code>セル: 📝 テキスト</li>
+          </ul>
+        </li>
+        <li>例えば、音声と写真だけを使わせたい場合は、<code>E1</code>と<code>E3</code>のセルに<code>1</code>を、それ以外の<code>E2</code>, <code>E4</code>, <code>E5</code>のセルに<code>0</code>を入力します。</li>
+      </ol>
+       <div class="warning">もし全てのセルを<code>0</code>にした場合、安全のため「音声録音」だけが自動的に表示される設定になっています。</div>
+    </div>
+
+    <div class="section">
+      <h2>使い方（子どもたち向け）</h2>
+      <p>この下の部分は、先生が子どもたちに使い方を説明する際にお役立てください。</p>
+      <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+      <h3>さあ、記録を始めよう！</h3>
+      <ol>
+        <li><strong>先生から教わった「名前」や「グループ名」を、一番上の入力欄に入力しよう。</strong><br>（例: さとう、Aグループ）</li>
+        <li><strong>使いたい機能のボタン（「🎙️音声録音」や「📷写真撮影」など）を選んでタップしよう。</strong></li>
+        <li><strong>画面の指示にしたがって、録音や撮影をしてみよう。</strong><br>「録音開始」や「撮影」ボタンを押すと、記録が始まるよ。</li>
+        <li><strong>記録が終わったら、必ず<code>💾 保存</code>ボタンを押そう。</strong><br>「ドライブに保存中...」という表示が出て、しばらくすると「〇〇を保存しました」に変わったら、先生のところに記録が送られた合図だよ。</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>記録の確認（先生向け）</h2>
+      <p>子どもたちが保存したファイルは、先生のGoogleドライブで確認できるほか、スプレッドシートにも自動で記録されます。</p>
+      <ol>
+        <li>スプレッドシートを開き、画面下部にある<strong><code>履歴</code></strong>シートのタブをクリックします。</li>
+        <li>ここには、保存したファイルの名前、日時、保存先フォルダへのリンク、ファイルそのものへのリンクが自動的に一覧で記録されていきます。ファイル名やフォルダ名をクリックするだけで、簡単にGoogleドライブのファイルにアクセスできます。</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <p>スーパー記録くん</p>
+  </div>
+
+</body>
+</html>
